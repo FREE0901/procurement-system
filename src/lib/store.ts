@@ -7,7 +7,9 @@ interface AppState {
     // Auth
     user: User | null;
     login: (email: string) => void;
+    loginAsGuest: () => void;
     logout: () => void;
+    registerUser: (data: { name: string; company: string; email: string; password: string }) => { success: boolean; error?: string };
 
     // Data (Mock DB)
     products: Product[];
@@ -20,9 +22,10 @@ interface AppState {
     removeFromCart: (index: number) => void;
     updateCartQty: (index: number, qty: number) => void;
     clearCart: () => void;
+    addQuoteItemsToCart: (quoteId: string) => void;
 
     // Actions
-    submitQuote: (note: string, address: string) => void;
+    submitQuote: (note: string, address: string, desiredDelivery: string, company: string, personInCharge: string) => void;
     updateQuoteStatus: (id: string, status: QuoteStatus) => void;
     addProduct: (product: Product) => void;
     updateUserAddress: (address: string) => void;
@@ -40,7 +43,40 @@ export const useStore = create<AppState>()(
                 const u = USERS.find((u) => u.email === email);
                 if (u) set({ user: u });
             },
+            loginAsGuest: () => {
+                const guestUser: User = {
+                    id: `guest-${Date.now()}`,
+                    email: "",
+                    name: "ゲスト",
+                    company: "",
+                    rank: 1,
+                    rankName: "ゲスト",
+                    isGuest: true,
+                    status: "有効",
+                };
+                set({ user: guestUser, cart: [] });
+            },
             logout: () => set({ user: null, cart: [] }),
+            registerUser: ({ name, company, email, password }) => {
+                const state = get();
+                // Check duplicate email
+                const allUsers = [...USERS, ...state.users.filter(u => !USERS.find(bu => bu.id === u.id))];
+                if (allUsers.find(u => u.email === email)) {
+                    return { success: false, error: "このメールアドレスはすでに登録されています" };
+                }
+                const newUser: User = {
+                    id: `u-${Date.now()}`,
+                    email,
+                    password,
+                    name,
+                    company,
+                    rank: 1,
+                    rankName: "スタンダード",
+                    status: "有効",
+                };
+                set({ users: [...state.users, newUser], user: newUser });
+                return { success: true };
+            },
 
             products: PRODUCTS,
             quotes: MOCK_QUOTES,
@@ -48,7 +84,6 @@ export const useStore = create<AppState>()(
 
             cart: [],
             addToCart: (product, size, qty) => {
-                // Simple add - check existing
                 const state = get();
                 const existingIdx = state.cart.findIndex(
                     (c) => c.productId === product.id && c.size === size
@@ -86,14 +121,41 @@ export const useStore = create<AppState>()(
             },
             clearCart: () => set({ cart: [] }),
 
-            submitQuote: (note, address) => {
+            addQuoteItemsToCart: (quoteId) => {
+                const state = get();
+                const quote = state.quotes.find(q => q.id === quoteId);
+                if (!quote) return;
+                let newCart = [...state.cart];
+                quote.items.forEach(item => {
+                    const existingIdx = newCart.findIndex(c => c.productId === item.productId && c.size === item.size);
+                    const product = state.products.find(p => p.id === item.productId);
+                    if (existingIdx >= 0) {
+                        newCart[existingIdx].qty += item.qty;
+                    } else {
+                        newCart.push({
+                            productId: item.productId,
+                            name: item.name,
+                            code: item.code,
+                            size: item.size,
+                            qty: item.qty,
+                            price: item.price,
+                            unit: item.unit,
+                            image: product?.image || "https://placehold.co/400x300/e8e8e8/666?text=No+Image",
+                        });
+                    }
+                });
+                set({ cart: newCart });
+            },
+
+            submitQuote: (note, address, desiredDelivery, company, personInCharge) => {
                 const state = get();
                 if (!state.user) return;
                 const total = state.cart.reduce((s, c) => s + c.price * c.qty, 0);
                 const newQuote: Quote = {
                     id: `Q-${new Date().getFullYear()}-${String(state.quotes.length + 1).padStart(3, "0")}`,
                     userId: state.user.id,
-                    company: state.user.company,
+                    company: company || state.user.company || state.user.name,
+                    personInCharge: personInCharge || state.user.name,
                     userRank: state.user.rank,
                     date: new Date().toISOString().split("T")[0],
                     status: "依頼中",
@@ -109,6 +171,7 @@ export const useStore = create<AppState>()(
                     total,
                     note,
                     shippingAddress: address,
+                    desiredDelivery,
                 };
                 set({ quotes: [newQuote, ...state.quotes], cart: [] });
             },
@@ -148,7 +211,7 @@ export const useStore = create<AppState>()(
                 cart: state.cart,
                 quotes: state.quotes,
                 favorites: state.favorites,
-                // We persist data changes to simulate "Backend" persistence
+                users: state.users,
             }),
         }
     )

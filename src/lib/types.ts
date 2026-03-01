@@ -9,6 +9,7 @@ export interface User {
   rank: Rank;
   rankName: string;
   isAdmin?: boolean;
+  isGuest?: boolean;
   status: "有効" | "無効";
   lastOrder?: string;
   shippingAddress?: string;
@@ -18,6 +19,7 @@ export interface Category {
   id: string;
   name: string;
   icon: string;
+  subcategories?: { id: string; name: string }[];
 }
 
 export interface Product {
@@ -25,11 +27,14 @@ export interface Product {
   name: string;
   code: string;
   category: string;
+  subcategoryId?: string;
   minRank: Rank;
   unit: string;
   sizes: string[];
   prices: Record<string, number>;
   image: string;
+  isPickup?: boolean;
+  saleRate?: number; // 割引率 例: 10 = 10%OFF
 }
 
 export interface CartItem {
@@ -59,6 +64,7 @@ export interface Quote {
   id: string;
   userId: string;
   company: string;
+  personInCharge?: string;
   userRank: Rank;
   date: string;
   status: QuoteStatus;
@@ -66,5 +72,5 @@ export interface Quote {
   total: number;
   note?: string;
   shippingAddress?: string;
+  desiredDelivery?: string; // 希望納期
 }
-

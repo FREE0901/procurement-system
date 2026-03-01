@@ -113,6 +113,11 @@ export default function ClientLayout({
                                     </Badge>
                                 </div>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => router.push("/client/account")} className="cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4 opacity-0" />
+                                    アカウント設定
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => { logout(); router.push("/login"); }} className="text-red-600 focus:text-red-600 cursor-pointer">
                                     <LogOut className="mr-2 h-4 w-4" />
                                     ログアウト
@@ -144,10 +149,10 @@ export default function ClientLayout({
                         <div>
                             <h4 className="font-bold text-white mb-4">商品カテゴリ</h4>
                             <ul className="space-y-2 text-sm">
-                                <li><a href="#" className="hover:text-orange-500 transition">継手・フィッティング</a></li>
-                                <li><a href="#" className="hover:text-orange-500 transition">バルブ</a></li>
-                                <li><a href="#" className="hover:text-orange-500 transition">フランジ</a></li>
-                                <li><a href="#" className="hover:text-orange-500 transition">パイプ・管材</a></li>
+                                <li><a href="#" className="hover:text-orange-500 transition">🏠 住宅設備関係</a></li>
+                                <li><a href="#" className="hover:text-orange-500 transition">🏭 工場・プラント関係</a></li>
+                                <li><a href="#" className="hover:text-orange-500 transition">📄 事務用品</a></li>
+                                <li><a href="#" className="hover:text-orange-500 transition">⭐ オリジナル商品</a></li>
                             </ul>
                         </div>
                         <div>

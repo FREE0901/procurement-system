@@ -38,15 +38,26 @@ export function AdminProductDialog({ product, open, onOpenChange, onSave }: Admi
                     name: "",
                     code: "",
                     category: "c1",
+                    subcategoryId: "c1-1",
                     minRank: 1,
                     unit: "個",
                     sizes: [],
                     prices: {},
                     image: "https://placehold.co/400x300/e8e8e8/666?text=New+Product",
+                    isPickup: false,
+                    saleRate: 0,
                 });
             }
         }
     }, [open, product]);
+
+    const handleCategoryChange = (catId: string) => {
+        const cat = CATEGORIES.find(c => c.id === catId);
+        const subId = cat?.subcategories ? cat.subcategories[0].id : undefined;
+        setFormData(prev => ({ ...prev, category: catId, subcategoryId: subId }));
+    };
+
+    const activeCat = CATEGORIES.find(c => c.id === formData.category);
 
     const handleChange = (field: keyof Product, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -101,7 +112,7 @@ export function AdminProductDialog({ product, open, onOpenChange, onSave }: Admi
                             <Label>カテゴリ *</Label>
                             <Select
                                 value={formData.category}
-                                onValueChange={(val) => handleChange("category", val)}
+                                onValueChange={handleCategoryChange}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="カテゴリ選択" />
@@ -113,6 +124,24 @@ export function AdminProductDialog({ product, open, onOpenChange, onSave }: Admi
                                 </SelectContent>
                             </Select>
                         </div>
+                        {activeCat?.subcategories && activeCat.subcategories.length > 0 && (
+                            <div className="space-y-2">
+                                <Label>小カテゴリ</Label>
+                                <Select
+                                    value={formData.subcategoryId || ""}
+                                    onValueChange={(val) => handleChange("subcategoryId", val)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="小カテゴリ選択" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {activeCat.subcategories.map(s => (
+                                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <Label>公開ランク *</Label>
                             <Select
@@ -145,6 +174,30 @@ export function AdminProductDialog({ product, open, onOpenChange, onSave }: Admi
                             <Input
                                 value={formData.image}
                                 onChange={(e) => handleChange("image", e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center space-x-2 pt-8">
+                            <input
+                                type="checkbox"
+                                id="isPickup"
+                                checked={!!formData.isPickup}
+                                onChange={(e) => handleChange("isPickup", e.target.checked)}
+                                className="w-4 h-4 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
+                            />
+                            <Label htmlFor="isPickup">ピックアップ商品として表示</Label>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>割引率 (セール) %</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={formData.saleRate || 0}
+                                onChange={(e) => handleChange("saleRate", parseInt(e.target.value) || 0)}
+                                placeholder="例: 10 (10%OFF)"
                             />
                         </div>
                     </div>

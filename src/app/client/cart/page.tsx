@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, ArrowRight, User as UserIcon, MapPin } from "lucide-react";
+import { Trash2, ArrowRight, MapPin, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
@@ -18,12 +18,19 @@ export default function CartPage() {
     const [note, setNote] = useState("");
     const [address, setAddress] = useState("");
     const [saveAddress, setSaveAddress] = useState(false);
+    const [desiredDelivery, setDesiredDelivery] = useState("");
+    const [company, setCompany] = useState("");
+    const [personInCharge, setPersonInCharge] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        if (user?.shippingAddress) {
-            setAddress(user.shippingAddress);
-            setSaveAddress(true);
+        if (user) {
+            if (user.shippingAddress) {
+                setAddress(user.shippingAddress);
+                setSaveAddress(true);
+            }
+            if (user.company) setCompany(user.company);
+            if (user.name) setPersonInCharge(user.name);
         }
     }, [user]);
 
@@ -32,15 +39,11 @@ export default function CartPage() {
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-
-        // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 800));
-
         if (saveAddress) {
             updateUserAddress(address);
         }
-
-        submitQuote(note, address);
+        submitQuote(note, address, desiredDelivery, company, personInCharge);
         router.push("/client/history");
     };
 
@@ -124,10 +127,6 @@ export default function CartPage() {
                         </Table>
                     </CardContent>
                 </Card>
-
-                <div className="lg:hidden">
-                    {/* Spacer for mobile where sticky summary might cover content */}
-                </div>
             </div>
 
             <div className="lg:col-span-1">
@@ -135,7 +134,8 @@ export default function CartPage() {
                     <CardHeader className="pb-4">
                         <CardTitle>ご依頼内容の確認</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-5">
+                        {/* 金額サマリー */}
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm text-slate-300">
                                 <span>商品合計 (参考)</span>
@@ -148,6 +148,42 @@ export default function CartPage() {
                             <p className="text-[10px] text-slate-400 mt-1">※ 正式な金額は回答時にお知らせします</p>
                         </div>
 
+                        {/* 希望納期 */}
+                        <div className="space-y-2 pt-4 border-t border-slate-700">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-orange-500" />
+                                希望納期
+                            </Label>
+                            <Input
+                                type="date"
+                                className="bg-slate-800 border-slate-700 text-white [color-scheme:dark]"
+                                value={desiredDelivery}
+                                onChange={(e) => setDesiredDelivery(e.target.value)}
+                                min={new Date().toISOString().split("T")[0]}
+                            />
+                            <p className="text-[10px] text-slate-400">※ ご要望に添えない場合もございます</p>
+                        </div>
+
+                        {/* 依頼者情報 */}
+                        <div className="space-y-3 pt-4 border-t border-slate-700">
+                            <Label className="text-sm font-medium">会社名</Label>
+                            <Input
+                                placeholder="会社名"
+                                className="bg-slate-800 border-slate-700 text-white"
+                                value={company}
+                                onChange={(e) => setCompany(e.target.value)}
+                            />
+
+                            <Label className="text-sm font-medium mt-3 block">担当者名</Label>
+                            <Input
+                                placeholder="担当者名"
+                                className="bg-slate-800 border-slate-700 text-white"
+                                value={personInCharge}
+                                onChange={(e) => setPersonInCharge(e.target.value)}
+                            />
+                        </div>
+
+                        {/* 納品先住所 */}
                         <div className="space-y-3 pt-4 border-t border-slate-700">
                             <Label className="text-sm font-medium flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-orange-500" />
@@ -172,10 +208,11 @@ export default function CartPage() {
                             </div>
                         </div>
 
+                        {/* 備考 */}
                         <div className="space-y-2">
                             <Label className="text-sm font-medium">備考・ご要望</Label>
                             <Textarea
-                                placeholder="希望納期や特記事項があればご記入ください"
+                                placeholder="特記事項があればご記入ください"
                                 className="bg-slate-800 border-slate-700 text-white"
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}

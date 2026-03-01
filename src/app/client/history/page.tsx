@@ -2,15 +2,18 @@
 
 import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { QuoteStatus } from "@/lib/types";
+import { RotateCcw, ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function HistoryPage() {
-    const { user, quotes } = useStore();
+    const { user, quotes, addQuoteItemsToCart } = useStore();
+    const router = useRouter();
 
     if (!user) return null;
 
-    // Filter quotes for current user
     const myQuotes = quotes.filter(q => q.userId === user.id);
 
     const statusColor = (s: QuoteStatus) => {
@@ -25,6 +28,11 @@ export default function HistoryPage() {
     };
 
     const fmt = (n: number) => (n === 0 || !n ? "ー" : `¥${n.toLocaleString()}`);
+
+    const handleReorder = (quoteId: string) => {
+        addQuoteItemsToCart(quoteId);
+        router.push("/client/cart");
+    };
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -43,6 +51,11 @@ export default function HistoryPage() {
                                     <div className="flex items-center gap-3">
                                         <span className="font-mono font-medium text-gray-700">#{q.id}</span>
                                         <span className="text-xs text-gray-400">{q.date}</span>
+                                        {q.desiredDelivery && (
+                                            <span className="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                                                希望納期: {q.desiredDelivery}
+                                            </span>
+                                        )}
                                     </div>
                                     <Badge variant="secondary" className={statusColor(q.status)}>
                                         {q.status}
@@ -60,7 +73,7 @@ export default function HistoryPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-gray-50/50 rounded-lg p-3 text-sm space-y-2">
+                                <div className="bg-gray-50/50 rounded-lg p-3 text-sm space-y-2 mb-4">
                                     {q.items.slice(0, 3).map((item, idx) => (
                                         <div key={idx} className="flex justify-between text-gray-600">
                                             <span className="truncate max-w-[200px]">{item.name}</span>
@@ -71,6 +84,20 @@ export default function HistoryPage() {
                                         <p className="text-xs text-gray-400 text-center pt-1">+ 他 {q.items.length - 3} 点</p>
                                     )}
                                 </div>
+
+                                {/* もう一度買う？ボタン */}
+                                {q.items.length > 0 && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 gap-2"
+                                        onClick={() => handleReorder(q.id)}
+                                    >
+                                        <RotateCcw className="w-3.5 h-3.5" />
+                                        もう一度買う？
+                                        <ShoppingCart className="w-3.5 h-3.5" />
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
                     ))}

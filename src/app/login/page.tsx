@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Lock, Mail } from "lucide-react";
+import { User, Lock, Mail, LogIn } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
     const router = useRouter();
     const login = useStore((state) => state.login);
+    const loginAsGuest = useStore((state) => state.loginAsGuest);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -35,7 +37,6 @@ export default function LoginPage() {
     const demoLogin = (u: typeof USERS[0]) => {
         setEmail(u.email);
         setPassword(u.password || "");
-        // Auto submit after a short delay for visual feedback
         setTimeout(() => {
             login(u.email);
             if (u.isAdmin) {
@@ -44,6 +45,11 @@ export default function LoginPage() {
                 router.push("/client/products");
             }
         }, 500);
+    };
+
+    const handleGuestLogin = () => {
+        loginAsGuest();
+        router.push("/client/products");
     };
 
     return (
@@ -57,12 +63,10 @@ export default function LoginPage() {
                     <CardDescription>部材見積もり依頼システム</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-4">
                         {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-200">{error}</div>}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                メールアドレス
-                            </label>
+                            <label className="text-sm font-medium leading-none">メールアドレス</label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -74,9 +78,7 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                パスワード
-                            </label>
+                            <label className="text-sm font-medium leading-none">パスワード</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -85,13 +87,35 @@ export default function LoginPage() {
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                                 />
                             </div>
                         </div>
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600" onClick={handleLogin}>
+                        <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
                             ログイン
                         </Button>
+                    </form>
+
+                    {/* ゲストログイン */}
+                    <div className="space-y-2">
+                        <Button
+                            variant="outline"
+                            className="w-full border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"
+                            onClick={handleGuestLogin}
+                        >
+                            <LogIn className="mr-2 h-4 w-4" />
+                            ゲストとしてログイン
+                        </Button>
+                        <p className="text-[10px] text-center text-muted-foreground">
+                            ※ ゲストはスタンダードランクの商品を閲覧できます
+                        </p>
+                    </div>
+
+                    {/* 新規登録リンク */}
+                    <div className="text-center text-sm">
+                        <span className="text-muted-foreground">アカウントをお持ちでない方は </span>
+                        <Link href="/register" className="text-orange-600 font-medium hover:underline">
+                            新規登録
+                        </Link>
                     </div>
 
                     <div className="relative">
