@@ -13,7 +13,8 @@ import { Product } from "@/lib/types";
 import { AdminProductDialog } from "@/components/admin/AdminProductDialog";
 
 export default function AdminProductsPage() {
-    const { products, addProduct } = useStore();
+    const { products, addProduct, updateProduct } = useStore();
+    const [savedMessage, setSavedMessage] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [sortKey, setSortKey] = useState<"name" | "category" | "updated">("updated");
 
@@ -43,14 +44,18 @@ export default function AdminProductsPage() {
         setDialogOpen(true);
     };
 
+    const showMessage = (msg: string) => {
+        setSavedMessage(msg);
+        setTimeout(() => setSavedMessage(null), 3000);
+    };
+
     const handleSave = (product: Product) => {
         if (editingProduct) {
-            // Update existing (Store mock action for update is missing, so we'll just add/overwrite for demo or ignore)
-            // In a real app we would call updateProduct(product)
-            alert("製品情報を更新しました（デモのためデータは永続化されません）");
+            updateProduct(product);
+            showMessage("製品情報を更新しました");
         } else {
             addProduct(product);
-            alert("新規製品を登録しました");
+            showMessage("新規製品を登録しました");
         }
     };
 
@@ -65,6 +70,12 @@ export default function AdminProductsPage() {
 
     return (
         <div className="space-y-6">
+            {savedMessage && (
+                <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in slide-in-from-top-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {savedMessage}
+                </div>
+            )}
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">商品管理</h1>
                 <div className="flex gap-2">

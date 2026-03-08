@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, LogOut, Package, History } from "lucide-react";
+import { ShoppingCart, LogOut, Package, History, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -114,7 +114,7 @@ export default function ClientLayout({
                                 </div>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => router.push("/client/account")} className="cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4 opacity-0" />
+                                    <User className="mr-2 h-4 w-4" />
                                     アカウント設定
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -202,6 +202,12 @@ export default function ClientLayout({
                     <Button variant="ghost" className={`w-full flex-col h-auto py-2 gap-1 ${pathname === "/client/history" ? "text-orange-600" : "text-gray-500"}`}>
                         <History className="w-5 h-5" />
                         <span className="text-[10px]">履歴</span>
+                    </Button>
+                </Link>
+                <Link href="/client/account" className="flex-1">
+                    <Button variant="ghost" className={`w-full flex-col h-auto py-2 gap-1 ${pathname === "/client/account" ? "text-orange-600" : "text-gray-500"}`}>
+                        <User className="w-5 h-5" />
+                        <span className="text-[10px]">設定</span>
                     </Button>
                 </Link>
             </div>

@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, ArrowRight, MapPin, Calendar } from "lucide-react";
+import { Trash2, ArrowRight, MapPin, Calendar, ShoppingCart, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ export default function CartPage() {
     const [company, setCompany] = useState("");
     const [personInCharge, setPersonInCharge] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState<{ company?: string; personInCharge?: string }>({});
 
     useEffect(() => {
         if (user) {
@@ -38,6 +39,14 @@ export default function CartPage() {
     const fmt = (n: number) => (n === 0 || !n ? "ー" : `¥${n.toLocaleString()}`);
 
     const handleSubmit = async () => {
+        const newErrors: { company?: string; personInCharge?: string } = {};
+        if (!company.trim()) newErrors.company = "会社名を入力してください";
+        if (!personInCharge.trim()) newErrors.personInCharge = "担当者名を入力してください";
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({});
         setIsSubmitting(true);
         await new Promise(resolve => setTimeout(resolve, 800));
         if (saveAddress) {
@@ -51,7 +60,7 @@ export default function CartPage() {
         return (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
                 <div className="bg-gray-50 p-4 rounded-full mb-4">
-                    <Trash2 className="w-8 h-8 text-gray-400" />
+                    <ShoppingCart className="w-8 h-8 text-gray-400" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">カートは空です</h2>
                 <p className="text-gray-500 mb-6">商品詳細ページから見積もりを追加してください</p>
@@ -166,21 +175,35 @@ export default function CartPage() {
 
                         {/* 依頼者情報 */}
                         <div className="space-y-3 pt-4 border-t border-slate-700">
-                            <Label className="text-sm font-medium">会社名</Label>
-                            <Input
-                                placeholder="会社名"
-                                className="bg-slate-800 border-slate-700 text-white"
-                                value={company}
-                                onChange={(e) => setCompany(e.target.value)}
-                            />
+                            <div className="space-y-1">
+                                <Label className="text-sm font-medium">会社名 <span className="text-red-400">*</span></Label>
+                                <Input
+                                    placeholder="会社名"
+                                    className={`bg-slate-800 border-slate-700 text-white ${errors.company ? "border-red-500" : ""}`}
+                                    value={company}
+                                    onChange={(e) => { setCompany(e.target.value); setErrors(p => ({ ...p, company: undefined })); }}
+                                />
+                                {errors.company && (
+                                    <p className="text-red-400 text-xs flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3" />{errors.company}
+                                    </p>
+                                )}
+                            </div>
 
-                            <Label className="text-sm font-medium mt-3 block">担当者名</Label>
-                            <Input
-                                placeholder="担当者名"
-                                className="bg-slate-800 border-slate-700 text-white"
-                                value={personInCharge}
-                                onChange={(e) => setPersonInCharge(e.target.value)}
-                            />
+                            <div className="space-y-1">
+                                <Label className="text-sm font-medium">担当者名 <span className="text-red-400">*</span></Label>
+                                <Input
+                                    placeholder="担当者名"
+                                    className={`bg-slate-800 border-slate-700 text-white ${errors.personInCharge ? "border-red-500" : ""}`}
+                                    value={personInCharge}
+                                    onChange={(e) => { setPersonInCharge(e.target.value); setErrors(p => ({ ...p, personInCharge: undefined })); }}
+                                />
+                                {errors.personInCharge && (
+                                    <p className="text-red-400 text-xs flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3" />{errors.personInCharge}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {/* 納品先住所 */}

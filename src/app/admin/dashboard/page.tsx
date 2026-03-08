@@ -98,19 +98,29 @@ export default function AdminDashboard() {
                         <CardTitle className="text-lg">月間依頼推移</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[200px] flex items-end justify-between gap-2 px-2">
-                            {[45, 62, 38, 71, 55, 68, 82, 59, 73, 61, 88].map((v, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-1 group cursor-pointer">
-                                    <div
-                                        className="w-full bg-orange-100 rounded-t relative transition-all group-hover:bg-orange-200"
-                                        style={{ height: `${v}%` }}
-                                    >
-                                        <div className="absolute bottom-0 w-full bg-orange-500 rounded-t opacity-80 group-hover:opacity-100 transition-all h-full" />
-                                    </div>
-                                    <span className="text-[10px] text-gray-400">{i + 1}月</span>
+                        {(() => {
+                            const data = [45, 62, 38, 71, 55, 68, 82, 59, 73, 61, 88];
+                            const maxVal = Math.max(...data);
+                            const BAR_AREA = 160; // px available for bars (200px total - ~20px label - ~20px padding)
+                            return (
+                                <div className="h-[200px] flex items-end justify-between gap-2 px-2">
+                                    {data.map((v, i) => {
+                                        const barH = Math.round((v / maxVal) * BAR_AREA);
+                                        return (
+                                            <div key={i} className="flex-1 flex flex-col items-center gap-1 group cursor-pointer">
+                                                <div
+                                                    className="w-full bg-orange-100 rounded-t relative transition-all group-hover:bg-orange-200"
+                                                    style={{ height: `${barH}px` }}
+                                                >
+                                                    <div className="absolute bottom-0 w-full bg-orange-500 rounded-t opacity-80 group-hover:opacity-100 transition-all h-full" />
+                                                </div>
+                                                <span className="text-[10px] text-gray-400">{i + 1}月</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })()}
                     </CardContent>
                 </Card>
             </div>

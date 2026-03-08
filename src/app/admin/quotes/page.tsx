@@ -7,12 +7,25 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Quote, QuoteStatus } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Eye, MapPin, FileText } from "lucide-react";
+import { Eye, MapPin, FileText, Download } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminQuotesPage() {
     const { quotes, updateQuoteStatus } = useStore();
     const [viewQuote, setViewQuote] = useState<Quote | null>(null);
+    const [savedMsg, setSavedMsg] = useState<string | null>(null);
+
+    const showMsg = (msg: string) => {
+        setSavedMsg(msg);
+        setTimeout(() => setSavedMsg(null), 3000);
+    };
+
+    const handleCreatePdf = (q: Quote) => {
+        // 見積書PDF生成はバックエンド連携後に実装予定 — ステータスを対応中に変更しメッセージ表示
+        updateQuoteStatus(q.id, "対応中");
+        setViewQuote(null);
+        showMsg(`依頼 #${q.id} のステータスを「対応中」に変更しました`);
+    };
 
     const statusColor = (s: QuoteStatus) => {
         switch (s) {
@@ -29,6 +42,12 @@ export default function AdminQuotesPage() {
 
     return (
         <div className="space-y-6">
+            {savedMsg && (
+                <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {savedMsg}
+                </div>
+            )}
             <h1 className="text-2xl font-bold text-gray-900">見積もり依頼管理</h1>
 
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
@@ -69,7 +88,7 @@ export default function AdminQuotesPage() {
                                         <Eye className="w-4 h-4" />
                                     </Button>
                                     <Select
-                                        defaultValue={q.status}
+                                        value={q.status}
                                         onValueChange={(val) => updateQuoteStatus(q.id, val as QuoteStatus)}
                                     >
                                         <SelectTrigger className="w-[110px] h-8 text-xs">
@@ -168,7 +187,13 @@ export default function AdminQuotesPage() {
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setViewQuote(null)}>閉じる</Button>
-                        <Button className="bg-orange-500 hover:bg-orange-600">見積書作成へ進む</Button>
+                        <Button
+                            className="bg-orange-500 hover:bg-orange-600 gap-2"
+                            onClick={() => viewQuote && handleCreatePdf(viewQuote)}
+                        >
+                            <Download className="w-4 h-4" />
+                            見積書作成へ進む
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

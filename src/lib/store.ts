@@ -28,7 +28,9 @@ interface AppState {
     submitQuote: (note: string, address: string, desiredDelivery: string, company: string, personInCharge: string) => void;
     updateQuoteStatus: (id: string, status: QuoteStatus) => void;
     addProduct: (product: Product) => void;
+    updateProduct: (product: Product) => void;
     updateUserAddress: (address: string) => void;
+    updateUserRank: (userId: string, rank: Rank) => void;
 
     // Favorites
     favorites: string[];
@@ -186,12 +188,21 @@ export const useStore = create<AppState>()(
                 set({ products: [...get().products, product] });
             },
 
+            updateProduct: (product) => {
+                set({ products: get().products.map(p => p.id === product.id ? product : p) });
+            },
+
             updateUserAddress: (address) => {
                 const state = get();
                 if (state.user) {
                     const updatedUser = { ...state.user, shippingAddress: address };
                     set({ user: updatedUser });
                 }
+            },
+
+            updateUserRank: (userId, rank) => {
+                const rankNames: Record<number, string> = { 1: "スタンダード", 2: "プレミアム", 3: "VIP" };
+                set({ users: get().users.map(u => u.id === userId ? { ...u, rank, rankName: rankNames[rank] || u.rankName } : u) });
             },
 
             favorites: [],
@@ -212,6 +223,7 @@ export const useStore = create<AppState>()(
                 quotes: state.quotes,
                 favorites: state.favorites,
                 users: state.users,
+                products: state.products,
             }),
         }
     )
